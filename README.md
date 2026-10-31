@@ -25,7 +25,7 @@ Prior research suggests that reading code, diagnosing bugs, using AI, and checki
 
 ## Phase 1 Report
 
-[Smith_Project_Phase_1_Report_5_Pages.docx](Smith_Project_Phase_1_Report_5_Pages.docx) covers:
+[Smith_Project_Phase_1_Report_5.docx](Smith_Project_Phase_1_Report_5.docx) covers:
 
 1. Project understanding and background research
 2. Market and competitor analysis (LeetCode, HackerRank, ChatGPT)
