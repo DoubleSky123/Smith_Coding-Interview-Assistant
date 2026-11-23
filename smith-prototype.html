@@ -1,0 +1,1167 @@
+<title>Smith</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+/* ── Layout: Matrix terminal — true black, #00ff41 green ── */
+:root {
+  --bg:       #000000;
+  --surf:     #050d05;
+  --surf2:    #0a160a;
+  --surf3:    #102010;
+  --border:   #1a3a1a;
+  --fg:       #ccffcc;
+  --fg2:      #66cc66;
+  --fg3:      #336633;
+  --acc:      #00ff41;
+  --acc-dim:  rgba(0,255,65,.1);
+  --acc-btn:  #00bb2d;
+  --acc-hov:  #00ff41;
+  --info:     #00cfff;
+  --warn:     #ffcc00;
+  --err:      #ff4444;
+  --mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --r:        4px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f0fff0; --surf: #fff; --surf2: #e6f7e6; --surf3: #cceecc;
+    --border: #99cc99; --fg: #052005; --fg2: #2d6e2d; --fg3: #559955;
+    --acc: #008a1f; --acc-dim: rgba(0,138,31,.1); --acc-btn: #007018; --acc-hov: #008a1f;
+    --info: #006699; --warn: #886600; --err: #cc2200;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f0fff0; --surf: #fff; --surf2: #e6f7e6; --surf3: #cceecc;
+  --border: #99cc99; --fg: #052005; --fg2: #2d6e2d; --fg3: #559955;
+  --acc: #008a1f; --acc-dim: rgba(0,138,31,.1); --acc-btn: #007018; --acc-hov: #008a1f;
+  --info: #006699; --warn: #886600; --err: #cc2200;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg); color: var(--fg);
+  font-size: 14px; line-height: 1.6; overflow-x: hidden;
+}
+h1,h2,h3 { font-family: 'Space Grotesk', sans-serif; text-wrap: balance; line-height: 1.25; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: var(--r); font-size: 13px;
+  font-weight: 500; font-family: inherit; border: 1px solid transparent;
+  cursor: pointer; white-space: nowrap; transition: background .12s, border-color .12s;
+}
+.btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.btn-primary  { background: var(--acc-btn); color: #000; font-weight: 600; }
+.btn-primary:hover { background: var(--acc-hov); box-shadow: 0 0 10px rgba(0,255,65,.5); }
+.btn-secondary { background: var(--surf2); color: var(--fg); border-color: var(--border); }
+.btn-secondary:hover { background: var(--surf3); }
+.btn-ghost { background: transparent; color: var(--fg2); border-color: var(--border); }
+.btn-ghost:hover { background: var(--surf2); color: var(--fg); }
+.btn-danger { background: transparent; color: var(--err); border-color: var(--err); }
+.btn-danger:hover { background: rgba(248,81,73,.1); }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-lg { padding: 10px 22px; font-size: 15px; }
+.btn[disabled] { opacity: .5; pointer-events: none; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex; align-items: center; padding: 2px 8px;
+  border-radius: 20px; font-size: 11px; font-weight: 500; letter-spacing: .03em;
+}
+.badge-blue   { background: rgba(88,166,255,.12); color: var(--info); }
+.badge-green  { background: rgba(63,185,80,.12);  color: var(--acc); }
+.badge-orange { background: rgba(210,153,34,.12); color: var(--warn); }
+
+/* ── Prototype notice ── */
+#proto-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  padding: 6px max(16px, env(safe-area-inset-left,0px));
+  padding-right: max(16px, env(safe-area-inset-right,0px));
+  background: var(--surf); border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--fg3); letter-spacing: .01em;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+#proto-bar b { color: var(--warn); font-weight: 500; }
+#theme-toggle {
+  background: var(--surf2); border: 1px solid var(--border); border-radius: 20px;
+  color: var(--fg2); font-size: 11px; font-weight: 500; cursor: pointer;
+  padding: 3px 10px; white-space: nowrap; flex-shrink: 0; font-family: inherit;
+  transition: background .12s;
+}
+#theme-toggle:hover { background: var(--surf3); color: var(--fg); }
+#theme-toggle:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+/* ── Shared top-bar ── */
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 max(16px, env(safe-area-inset-left,0px));
+  padding-right: max(16px, env(safe-area-inset-right,0px));
+  height: 52px; border-bottom: 1px solid var(--border);
+  background: var(--surf); flex-shrink: 0; position: sticky; top: 0; z-index: 10;
+}
+.topbar-brand {
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+  font-size: 16px; color: var(--fg); letter-spacing: -.3px;
+}
+.topbar-brand em { font-style: normal; color: var(--acc); }
+.topbar-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+.topbar-stage { font-size: 12px; color: var(--fg2); }
+
+/* ═══════════════════ SETUP SCREEN ═══════════════════ */
+#scr-setup {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh;
+  padding: 48px max(24px, env(safe-area-inset-left,0px)) 80px;
+  padding-right: max(24px, env(safe-area-inset-right,0px));
+}
+.setup-wrap { width: 100%; max-width: 640px; }
+
+.smith-mark {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.smith-icon {
+  width: 38px; height: 38px; border-radius: 4px;
+  background: transparent; color: var(--acc);
+  border: 1px solid var(--acc);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 14px; font-weight: 500; letter-spacing: -1px;
+  box-shadow: 0 0 8px rgba(0,255,65,.4), inset 0 0 8px rgba(0,255,65,.05);
+  text-shadow: 0 0 6px var(--acc);
+}
+.smith-name {
+  font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700;
+  color: var(--fg); letter-spacing: -.5px;
+}
+.smith-name em { font-style: normal; color: var(--acc); }
+.smith-sub { font-size: 13px; color: var(--fg3); margin-left: 48px; margin-bottom: 32px; }
+
+.task-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 10px; padding: 22px 24px; margin-bottom: 16px;
+}
+.task-card-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; margin-bottom: 12px;
+}
+.task-card-title {
+  font-size: 16px; font-weight: 600; font-family: var(--mono); color: var(--fg);
+}
+.task-badges { display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+.task-desc { font-size: 13.5px; color: var(--fg2); line-height: 1.65; margin-bottom: 14px; }
+.task-meta {
+  display: flex; gap: 18px; flex-wrap: wrap; padding-top: 14px;
+  border-top: 1px solid var(--border); font-size: 12px; color: var(--fg3);
+}
+.task-meta strong { color: var(--fg2); }
+
+.ai-notice {
+  display: flex; gap: 10px; background: var(--acc-dim);
+  border: 1px solid rgba(63,185,80,.2); border-radius: var(--r);
+  padding: 13px 15px; font-size: 13px; color: var(--fg2); line-height: 1.6;
+  margin-bottom: 24px;
+}
+.ai-notice-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.ai-notice a { color: var(--acc); font-weight: 500; }
+
+.setup-cta { display: flex; justify-content: flex-end; }
+
+/* ═══════════════════ WORKSPACE SCREEN ═══════════════════ */
+#scr-workspace {
+  display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+}
+#scr-workspace .topbar { position: static; }
+
+.ws-timer {
+  margin-left: auto; font-family: var(--mono); font-size: 14px; font-weight: 500;
+  background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 4px 10px; min-width: 70px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.ws-timer.warn  { color: var(--warn); border-color: var(--warn); background: rgba(210,153,34,.1); }
+.ws-timer.urgent{ color: var(--err);  border-color: var(--err);  background: rgba(248,81,73,.1); }
+.ws-topbar-actions { display: flex; gap: 8px; }
+
+.ws-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+
+/* Left panel */
+.ws-left {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; min-width: 0; border-right: 1px solid var(--border);
+}
+
+.task-toggle-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; background: var(--surf2); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; cursor: pointer; user-select: none;
+}
+.task-toggle-bar:hover { background: var(--surf3); }
+.task-toggle-label { font-size: 12px; font-weight: 500; color: var(--fg2); }
+.task-toggle-btn { background: none; border: none; color: var(--fg3); cursor: pointer; font-size: 12px; }
+
+.task-pane {
+  padding: 14px 16px; overflow-y: auto; background: var(--surf);
+  border-bottom: 1px solid var(--border); flex-shrink: 0; max-height: 260px;
+  font-size: 13px; line-height: 1.65;
+}
+.task-pane.closed { display: none; }
+.task-pane h4 { font-size: 12px; font-weight: 600; color: var(--fg); margin: 12px 0 5px; }
+.task-pane h4:first-child { margin-top: 0; }
+.task-pane p  { color: var(--fg2); margin-bottom: 7px; }
+.task-pane ul { padding-left: 18px; color: var(--fg2); margin-bottom: 7px; }
+.task-pane li { margin-bottom: 2px; }
+.task-pane code {
+  font-family: var(--mono); font-size: 12px; padding: 1px 5px;
+  background: var(--surf2); border: 1px solid var(--border); border-radius: 3px;
+}
+.task-pane pre {
+  background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 11px 13px; overflow-x: auto; margin: 6px 0;
+}
+.task-pane pre code { background: none; border: none; padding: 0; font-size: 12px; line-height: 1.6; }
+
+.editor-label {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 12px; background: var(--surf2);
+  border-bottom: 1px solid var(--border); flex-shrink: 0; font-size: 12px; color: var(--fg2);
+}
+.lang-pill {
+  font-family: var(--mono); font-size: 11px; padding: 1px 6px;
+  background: var(--surf3); border-radius: 3px; color: var(--fg2);
+}
+
+.code-wrap { flex: 1; overflow: hidden; min-height: 0; position: relative; }
+#code-editor {
+  width: 100%; height: 100%; resize: none; border: none; outline: none;
+  background: var(--bg); color: var(--fg); font-family: var(--mono);
+  font-size: 13px; line-height: 1.65; padding: 14px 16px; tab-size: 4;
+  caret-color: var(--acc);
+}
+#code-editor::selection { background: rgba(63,185,80,.18); }
+
+/* Test panel */
+.test-panel { border-top: 1px solid var(--border); flex-shrink: 0; background: var(--surf); }
+.test-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 12px; cursor: pointer; user-select: none;
+}
+.test-header:hover { background: var(--surf2); }
+.test-title { font-size: 12px; font-weight: 500; color: var(--fg2); display: flex; align-items: center; gap: 8px; }
+#test-tally { color: var(--fg3); }
+.test-results {
+  border-top: 1px solid var(--border); padding: 10px 12px;
+  max-height: 190px; overflow-y: auto;
+}
+.test-results.closed { display: none; }
+.tc {
+  display: flex; gap: 8px; align-items: flex-start;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 8px 10px; margin-bottom: 7px; font-size: 12px;
+}
+.tc:last-child { margin-bottom: 0; }
+.tc-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.tc.pass .tc-icon { color: var(--acc); }
+.tc.fail .tc-icon { color: var(--err); }
+.tc-name { font-weight: 500; color: var(--fg); }
+.tc-row  { color: var(--fg2); font-family: var(--mono); font-size: 11px; margin-top: 2px; }
+
+/* Right panel — AI */
+.ws-right { width: 380px; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+
+.ai-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surf2); flex-shrink: 0; }
+.ai-tab {
+  flex: 1; padding: 10px 8px; background: none; border: none; border-bottom: 2px solid transparent;
+  font-family: inherit; font-size: 12px; font-weight: 500; color: var(--fg2);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: color .12s;
+}
+.ai-tab:hover  { color: var(--fg); background: var(--surf3); }
+.ai-tab.on { color: var(--acc); border-bottom-color: var(--acc); }
+.ai-tab-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .6; }
+
+.ai-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+
+.chat-msgs {
+  flex: 1; overflow-y: auto; padding: 12px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.msg { display: flex; flex-direction: column; gap: 2px; }
+.msg-who {
+  font-size: 11px; font-weight: 500; letter-spacing: .04em;
+  color: var(--fg3); text-transform: uppercase;
+}
+.msg.user .msg-who { text-align: right; color: var(--info); }
+.msg-bub {
+  padding: 9px 12px; border-radius: 8px;
+  font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+}
+.msg.ai .msg-bub {
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 2px 8px 8px 8px; color: var(--fg);
+}
+.msg.user .msg-bub {
+  background: var(--acc-dim); border: 1px solid rgba(63,185,80,.2);
+  border-radius: 8px 2px 8px 8px; align-self: flex-end; max-width: 90%; color: var(--fg);
+}
+.msg-codeblock {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+  padding: 10px; margin-top: 7px; font-family: var(--mono); font-size: 12px;
+  line-height: 1.55; overflow-x: auto; white-space: pre;
+}
+.dots { display: flex; gap: 4px; padding: 10px 12px; background: var(--surf2);
+  border: 1px solid var(--border); border-radius: 2px 8px 8px 8px; width: fit-content; align-items: center; }
+.dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--fg3);
+  animation: blink 1.2s ease infinite; }
+.dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink { 0%,60%,100%{opacity:.3;transform:translateY(0)} 30%{opacity:1;transform:translateY(-3px)} }
+
+.chat-input-row {
+  border-top: 1px solid var(--border); padding: 10px;
+  display: flex; gap: 8px; align-items: flex-end; background: var(--surf); flex-shrink: 0;
+}
+.chat-input {
+  flex: 1; resize: none; min-height: 36px; max-height: 100px;
+  background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 7px 10px; color: var(--fg); font-family: inherit; font-size: 13px; outline: none;
+}
+.chat-input:focus { border-color: var(--acc); box-shadow: 0 0 0 2px var(--acc-dim); }
+.send-btn {
+  width: 34px; height: 34px; border-radius: var(--r); background: var(--acc-btn); border: none;
+  color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px;
+  flex-shrink: 0;
+}
+.send-btn:hover { background: var(--acc-hov); }
+.send-btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+/* ═══════════════════ FOLLOW-UP SCREEN ═══════════════════ */
+#scr-fu {
+  display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+}
+#scr-fu .topbar { position: static; }
+
+.fu-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+
+.fu-code-pane {
+  width: 400px; display: flex; flex-direction: column; border-right: 1px solid var(--border);
+  overflow: hidden; flex-shrink: 0;
+}
+.fu-code-label {
+  padding: 7px 12px; background: var(--surf2); border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--fg2); font-weight: 500; flex-shrink: 0;
+}
+.fu-code-view {
+  flex: 1; overflow: auto; padding: 14px 16px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.65;
+  background: var(--bg); color: var(--fg); white-space: pre;
+}
+
+.fu-main {
+  flex: 1; overflow-y: auto; padding: 32px max(28px, env(safe-area-inset-left,0px)) 80px;
+  padding-right: max(28px, env(safe-area-inset-right,0px));
+}
+
+.fu-steps { display: flex; gap: 6px; margin-bottom: 28px; }
+.fu-dot { height: 4px; border-radius: 2px; flex: 1; background: var(--border); transition: background .25s; }
+.fu-dot.done { background: var(--acc); }
+.fu-dot.cur  { background: var(--acc); opacity: .55; }
+
+.fu-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--acc); margin-bottom: 10px;
+}
+.fu-q { font-size: 18px; font-weight: 600; margin-bottom: 20px; line-height: 1.4; text-wrap: balance; }
+.fu-textarea {
+  width: 100%; min-height: 140px; resize: vertical;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 12px 14px; color: var(--fg); font-family: inherit; font-size: 14px; line-height: 1.6; outline: none;
+}
+.fu-textarea:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--acc-dim); }
+.fu-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+
+/* ═══════════════════ REVIEW SCREEN ═══════════════════ */
+#scr-review { min-height: 100vh; }
+
+.rv-inner {
+  max-width: 860px; margin: 0 auto;
+  padding: 36px max(24px, env(safe-area-inset-left,0px)) 80px;
+  padding-right: max(24px, env(safe-area-inset-right,0px));
+}
+.rv-h1 { font-size: 26px; font-weight: 700; margin-bottom: 5px; }
+.rv-sub { color: var(--fg2); font-size: 14px; margin-bottom: 32px; display: flex; align-items: center; gap: 8px; }
+.rv-pill {
+  padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500;
+  background: rgba(210,153,34,.12); color: var(--warn);
+}
+
+.rv-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr));
+  gap: 10px; margin-bottom: 32px;
+}
+.rv-stat { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 15px; }
+.rv-num { font-family: var(--mono); font-size: 24px; font-weight: 500; display: block; margin-bottom: 2px; font-variant-numeric: tabular-nums; }
+.rv-lbl { font-size: 12px; color: var(--fg2); }
+
+.rv-section { margin-bottom: 28px; }
+.rv-heading {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--fg3); margin-bottom: 12px;
+}
+.rv-code {
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 15px; font-family: var(--mono); font-size: 12.5px; line-height: 1.65;
+  overflow-x: auto; white-space: pre; color: var(--fg);
+}
+.rv-answer {
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 13px 15px; margin-bottom: 10px;
+}
+.rv-answer-q { font-size: 12px; font-weight: 500; color: var(--fg2); margin-bottom: 5px; }
+.rv-answer-a { font-size: 14px; color: var(--fg); line-height: 1.6; }
+
+.rv-fb-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 10px;
+}
+.rv-fb {
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 15px;
+}
+.rv-fb-title { font-size: 12px; font-weight: 600; color: var(--fg); margin-bottom: 6px; display: flex; align-items: center; gap: 7px; }
+.rv-fb-body  { font-size: 13px; color: var(--fg2); line-height: 1.55; }
+
+.rv-next { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.rv-next li {
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 11px 14px; display: flex; gap: 10px; font-size: 13px; color: var(--fg2);
+}
+.rv-next-n { font-family: var(--mono); font-size: 11px; color: var(--acc); font-weight: 500; flex-shrink: 0; margin-top: 2px; }
+
+.rv-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 30px; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ws-right { width: 100%; }
+  .ws-body  { flex-direction: column; }
+  .ws-left  { max-height: 55vh; }
+  .fu-code-pane { display: none; }
+  .rv-stats { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 500px) {
+  .ws-topbar-actions .btn-sm:first-child { display: none; }
+  .topbar-stage { display: none; }
+}
+</style>
+
+<!-- ░░░ PROTOTYPE NOTICE ░░░ -->
+<div id="proto-bar">
+  <span><b>⚑ Interactive prototype</b> — AI responses and test results are simulated.</span>
+  <button id="theme-toggle" onclick="toggleTheme()">☀ Light</button>
+</div>
+
+<!-- ░░░ SETUP ░░░ -->
+<div id="scr-setup">
+  <div class="setup-wrap">
+    <div class="smith-mark">
+      <div class="smith-icon">S&gt;</div>
+      <div class="smith-name">Smith<em>.</em></div>
+    </div>
+    <div class="smith-sub">AI-assisted coding interview practice</div>
+
+    <div class="task-card">
+      <div class="task-card-top">
+        <div class="task-card-title">summarize_orders(orders)</div>
+        <div class="task-badges">
+          <span class="badge badge-blue">Implementation</span>
+          <span class="badge badge-orange">Medium</span>
+          <span class="badge badge-green">20 min</span>
+        </div>
+      </div>
+      <p class="task-desc">
+        Implement a function that processes a list of customer orders and returns each
+        customer's total from completed orders only. Cancelled orders are ignored. The
+        function handles empty input, customers who only have cancelled orders, and multiple
+        orders from the same customer — using integer cents to avoid floating-point ambiguity.
+      </p>
+      <div class="task-meta">
+        <div><strong>Type:</strong> Feature implementation</div>
+        <div><strong>Language:</strong> Python</div>
+        <div><strong>Time limit:</strong> 20 minutes</div>
+        <div><strong>Demo tests:</strong> 4 cases</div>
+      </div>
+    </div>
+
+    <div class="ai-notice">
+      <div class="ai-notice-icon">✦</div>
+      <div>
+        <strong style="color:var(--acc)">AI assistance is explicitly allowed.</strong>
+        Use the AI Coding Assistant and AI Interviewer throughout the session. Focus on
+        understanding and verifying your solution — you'll be asked to explain decisions
+        and reflect on AI use in the follow-up.
+      </div>
+    </div>
+
+    <div class="setup-cta">
+      <button class="btn btn-primary btn-lg" onclick="startInterview()">Start Interview →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ░░░ WORKSPACE ░░░ -->
+<div id="scr-workspace" hidden>
+  <div class="topbar">
+    <div class="topbar-brand">Smith<em>.</em></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-stage" id="ws-stage">Coding</div>
+    <div class="ws-timer" id="ws-timer">20:00</div>
+    <div class="ws-topbar-actions">
+      <button class="btn btn-secondary btn-sm" onclick="runTests()">▶ Run Demo Tests</button>
+      <button class="btn btn-primary btn-sm" onclick="finishCoding()">Finish Coding</button>
+    </div>
+  </div>
+
+  <div class="ws-body">
+    <!-- Left: task + editor + tests -->
+    <div class="ws-left">
+      <div class="task-toggle-bar" onclick="toggleTask()">
+        <span class="task-toggle-label">📋 summarize_orders(orders) — task spec</span>
+        <button class="task-toggle-btn" id="task-toggle">▾ hide</button>
+      </div>
+      <div class="task-pane" id="task-pane">
+        <h4>Function signature</h4>
+        <pre><code>def summarize_orders(orders: list[dict]) -> dict:</code></pre>
+        <h4>Each order contains</h4>
+        <ul>
+          <li><code>customer</code> — string, the customer's name</li>
+          <li><code>status</code> — <code>"completed"</code> or <code>"cancelled"</code></li>
+          <li><code>amount_cents</code> — non-negative integer</li>
+        </ul>
+        <h4>Return</h4>
+        <p>A <code>dict</code> mapping customer names to their <strong>total completed-order amount</strong>. Ignore cancelled orders. Customers with only cancelled orders must not appear in the output.</p>
+        <h4>Examples</h4>
+        <pre><code># Empty input
+summarize_orders([]) == {}
+
+# Cancelled orders ignored
+summarize_orders([
+    {"customer": "Alice", "status": "cancelled", "amount_cents": 500}
+]) == {}
+
+# Multiple completed orders — same customer
+summarize_orders([
+    {"customer": "Alice", "status": "completed", "amount_cents": 300},
+    {"customer": "Alice", "status": "completed", "amount_cents": 200},
+]) == {"Alice": 500}
+
+# Multiple customers
+summarize_orders([
+    {"customer": "Alice", "status": "completed",  "amount_cents": 1000},
+    {"customer": "Bob",   "status": "completed",  "amount_cents":  750},
+    {"customer": "Alice", "status": "cancelled",  "amount_cents":  200},
+    {"customer": "Carol", "status": "cancelled",  "amount_cents":  400},
+]) == {"Alice": 1000, "Bob": 750}</code></pre>
+      </div>
+
+      <div class="editor-label">
+        <span>solution.py</span>
+        <span class="lang-pill">Python</span>
+      </div>
+      <div class="code-wrap">
+        <textarea id="code-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" aria-label="Python code editor">def summarize_orders(orders):
+    """
+    Return a dict mapping each customer to their total
+    completed-order amount in cents. Ignore cancelled orders.
+    """
+    # TODO: implement this function
+    pass</textarea>
+      </div>
+
+      <div class="test-panel">
+        <div class="test-header" onclick="toggleTests()">
+          <div class="test-title">
+            <span style="color:var(--acc)">⬡</span>
+            Demo Tests
+            <span id="test-tally">— not run yet</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();runTests()">▶ Run</button>
+        </div>
+        <div class="test-results closed" id="test-results"></div>
+      </div>
+    </div>
+
+    <!-- Right: AI panels -->
+    <div class="ws-right">
+      <div class="ai-tabs">
+        <button class="ai-tab on" id="tab-iv" onclick="switchTab('iv')">
+          <div class="ai-tab-dot"></div>AI Interviewer
+        </button>
+        <button class="ai-tab" id="tab-ca" onclick="switchTab('ca')">
+          <div class="ai-tab-dot"></div>AI Coding Assistant
+        </button>
+      </div>
+
+      <div class="ai-panel" id="panel-iv">
+        <div class="chat-msgs" id="msgs-iv"></div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="inp-iv" rows="1" placeholder="Ask the interviewer…" onkeydown="onKey(event,'iv')"></textarea>
+          <button class="send-btn" onclick="send('iv')" aria-label="Send">↑</button>
+        </div>
+      </div>
+
+      <div class="ai-panel" id="panel-ca" hidden>
+        <div class="chat-msgs" id="msgs-ca"></div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="inp-ca" rows="1" placeholder="Ask for coding help…" onkeydown="onKey(event,'ca')"></textarea>
+          <button class="send-btn" onclick="send('ca')" aria-label="Send">↑</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ░░░ FOLLOW-UP ░░░ -->
+<div id="scr-fu" hidden>
+  <div class="topbar">
+    <div class="topbar-brand">Smith<em>.</em></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-stage">Follow-up Questions</div>
+    <div class="ws-timer" id="fu-time" style="margin-left:auto;"></div>
+  </div>
+  <div class="fu-body">
+    <div class="fu-code-pane">
+      <div class="fu-code-label">Your final code</div>
+      <div class="fu-code-view" id="fu-code"></div>
+    </div>
+    <div class="fu-main">
+      <div class="fu-steps">
+        <div class="fu-dot cur" id="fd0"></div>
+        <div class="fu-dot"    id="fd1"></div>
+        <div class="fu-dot"    id="fd2"></div>
+      </div>
+      <div class="fu-eyebrow" id="fu-label">Question 1 of 3</div>
+      <div class="fu-q" id="fu-q"></div>
+      <textarea class="fu-textarea" id="fu-ans" placeholder="Type your answer…"></textarea>
+      <div class="fu-nav">
+        <button class="btn btn-secondary" id="fu-back" onclick="fuBack()">← Back</button>
+        <button class="btn btn-primary" id="fu-next" onclick="fuNext()">Next Question →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ░░░ REVIEW ░░░ -->
+<div id="scr-review" hidden>
+  <div class="topbar">
+    <div class="topbar-brand">Smith<em>.</em></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-stage">Session Review</div>
+  </div>
+  <div class="rv-inner">
+    <div class="rv-h1">Session Complete</div>
+    <div class="rv-sub">Your practice summary. <span class="rv-pill">Illustrative feedback</span></div>
+
+    <div class="rv-stats">
+      <div class="rv-stat"><span class="rv-num" id="rv-t">—</span><div class="rv-lbl">Time elapsed</div></div>
+      <div class="rv-stat"><span class="rv-num" id="rv-a">—</span><div class="rv-lbl">Assistant messages</div></div>
+      <div class="rv-stat"><span class="rv-num" id="rv-r">—</span><div class="rv-lbl">Test runs</div></div>
+      <div class="rv-stat"><span class="rv-num" id="rv-s">—</span><div class="rv-lbl">Last test result</div></div>
+    </div>
+
+    <div class="rv-section">
+      <div class="rv-heading">Final implementation</div>
+      <div class="rv-code" id="rv-code"></div>
+    </div>
+
+    <div class="rv-section">
+      <div class="rv-heading">Follow-up answers</div>
+      <div id="rv-answers"></div>
+    </div>
+
+    <div class="rv-section">
+      <div class="rv-heading">Feedback</div>
+      <div class="rv-fb-grid" id="rv-fb"></div>
+    </div>
+
+    <div class="rv-section">
+      <div class="rv-heading">Next practice suggestions</div>
+      <ul class="rv-next" id="rv-next"></ul>
+    </div>
+
+    <div class="rv-actions">
+      <button class="btn btn-secondary" onclick="document.getElementById('rv-code').scrollIntoView({behavior:'smooth'})">Review Code</button>
+      <button class="btn btn-danger" id="restart-btn" onclick="confirmRestart()">Start New Session</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+var S = {
+  startMs: 0, endMs: 0, interval: null, secs: 1200,
+  aiMsgs: 0, testRuns: 0, lastResult: null,
+  taskOpen: true, testsOpen: false,
+  activeTab: 'iv',
+  fuStep: 0, fuAns: ['','','']
+};
+
+var FU_QS = [
+  "Walk me through how your implementation handles the case where the same customer appears multiple times in the orders list.",
+  "Describe one edge case you considered. How did you verify your code handles it correctly?",
+  "Explain one AI suggestion you accepted, changed, or chose not to use — and why. If you didn't use the assistant at all, say so."
+];
+
+/* ══════════════════════════════════════════════════════
+   AI RESPONSE BANKS
+══════════════════════════════════════════════════════ */
+var IV_BANK = [
+  { k:['hello','hi','hey','good morning','good afternoon'],
+    r:"Welcome. Take a moment to read the task spec — there's no rush to start coding immediately. What's your first read of what the function needs to do?" },
+  { k:['clarif','what does','what is','mean','understand','explain the','confused'],
+    r:"Sure. The function takes a list of order dicts. Each has a customer name, a status (\"completed\" or \"cancelled\"), and an amount in integer cents. You return a dict mapping customer names to their total completed-order amount. Cancelled orders don't count at all. If a customer has only cancelled orders they should not appear in the output. Does that clarify it?" },
+  { k:['empty','no order','none','null'],
+    r:"Good instinct. The spec says explicitly to return an empty dict for empty input. What about a list that has orders, but they're all cancelled — what should that return?" },
+  { k:['edge','corner','special case','what if'],
+    r:"Name the three main edge cases for this problem. Think about the input, not the implementation — what unusual but valid inputs could a caller send you?" },
+  { k:['plan','approach','strategy','think','how should','going to','about to'],
+    r:"Walk me through your approach before you type. What data structure are you planning to use, and why does it fit this problem?" },
+  { k:['dict','hash','map','defaultdict','counter'],
+    r:"Tell me specifically: what's the key and what's the value in your dictionary? And what's the advantage of that structure for this problem?" },
+  { k:['loop','iterate','for each','for order'],
+    r:"What conditions are you checking inside the loop? Walk me through the logic step by step." },
+  { k:['done','finish','ready','complete','implement','coded'],
+    r:"Before you run the tests — trace through the last example manually: Alice with 1000 completed, Bob with 750 completed, Alice with 200 cancelled, Carol with 400 cancelled. What does your code produce?" },
+  { k:['time complex','big o','performance','efficient','runtime'],
+    r:"What's the time complexity of your solution? And the space complexity? Can you justify both?" },
+  { k:['test','run','result','check','pass','fail'],
+    r:"Before running tests, what output do you expect for the multiple-customers case? Reason through it without looking at the result." },
+  { k:['ai','assistant','suggestion','used ai','use ai','coding assistant'],
+    r:"Tell me about how you used the AI assistant. Did you understand the suggestions before incorporating them? Did you change or reject any?" },
+  { k:['why','reason','chose','pick','because','choice'],
+    r:"Can you justify that decision more precisely? What would break if you used a different approach?" }
+];
+var IV_FB = [
+  "Tell me more about that — what's the reasoning behind that choice?",
+  "How does that approach handle the case where a customer has multiple completed orders?",
+  "If this list had ten thousand entries, how would your solution perform?",
+  "Can you think of a valid input that might cause your current implementation to produce the wrong output?",
+  "How did you verify that cancelled orders are correctly excluded?"
+];
+var ivFbIdx = 0;
+
+var CA_BANK = [
+  { k:['help','stuck','lost','confused','where do i start','how to start','how do i begin'],
+    r:"Here's the core pattern:\n\n```python\nresult = {}\nfor order in orders:\n    if order['status'] == 'completed':\n        customer = order['customer']\n        result[customer] = result.get(customer, 0) + order['amount_cents']\nreturn result\n```\n\nThe key insight is `dict.get(key, 0)` — it returns the existing value if the key is present, or 0 if the key is new. That way you can add to the total without first checking whether the customer exists in the dict." },
+  { k:['dict.get','.get(','default value','key error','keyerror','how does get'],
+    r:"`dict.get(key, default)` looks up `key` in the dict. If the key exists, it returns its value. If not, it returns `default` without raising a `KeyError`.\n\nThese two are equivalent:\n\n```python\n# Without .get:\nif customer in result:\n    result[customer] += amount\nelse:\n    result[customer] = amount\n\n# With .get (more concise):\nresult[customer] = result.get(customer, 0) + amount\n```\n\nBoth are correct. `.get` is more idiomatic Python." },
+  { k:['explain','how does it work','walk me through','what does this do'],
+    r:"The algorithm does one pass through the list:\n\n1. For each order, check if `status == \"completed\"`\n2. If yes, look up the customer's running total (default 0 if not seen yet)\n3. Add this order's `amount_cents` to that total\n4. Store the new total back in the dict\n\nAfter the loop, the dict contains exactly what you need.\n\nTime: **O(n)** — one pass. Space: **O(k)** — where k is unique customers with completed orders." },
+  { k:['edge case','empty','cancel','zero','only cancelled','no completed','what about'],
+    r:"Three edge cases to check:\n\n1. **Empty input** (`[]`): loop never runs, `{}` returned ✓\n2. **All cancelled**: nothing passes the status check, empty dict returned ✓\n3. **Customer with only cancelled orders**: they never get added, so absent from output ✓\n\nThe first two demo tests cover these. Run them and check." },
+  { k:['review','check my code','feedback','look at my','is my code'],
+    r:"Things to verify in your code:\n\n- Does it always return a dict (not `None`)?\n- Are you using the exact key names `'customer'`, `'status'`, `'amount_cents'`?\n- Does your accumulation handle the first time a customer appears?\n- Is your `return` statement outside the loop (not indented under it)?\n\nCommon mistake: `return` inside the loop exits after the first order." },
+  { k:['defaultdict','collections','from collections','import'],
+    r:"`defaultdict(int)` from `collections` is a clean alternative:\n\n```python\nfrom collections import defaultdict\n\ndef summarize_orders(orders):\n    result = defaultdict(int)\n    for order in orders:\n        if order['status'] == 'completed':\n            result[order['customer']] += order['amount_cents']\n    return dict(result)\n```\n\n`defaultdict(int)` auto-initialises missing keys to 0, so you use `+=` directly. Convert to `dict()` before returning. Both approaches are correct — the interviewer may ask you to explain either." },
+  { k:['return','output','result','what should i return','format'],
+    r:"Return a plain Python dict: `{'Alice': 1500, 'Bob': 300}`.\n\n- Keys: customer name strings\n- Values: integer totals in cents\n- Only customers with at least one completed order appear\n- Empty input or all-cancelled → return `{}`\n\nReturn a plain `dict`, not a `defaultdict`, not `None`." },
+  { k:['fail','wrong output','incorrect','expected','test failing'],
+    r:"When a test fails, compare expected vs. actual carefully.\n\nCommon causes:\n1. Status check typo — it's `\"completed\"` not `\"complete\"`\n2. Wrong key name — `\"amount_cents\"` not `\"amount\"` or `\"price\"`\n3. `return` inside the loop — exits after first order\n4. First occurrence not handled — using `+=` on a missing key raises `KeyError`\n\nAdd a temporary `print(result)` inside the loop to watch it build up." }
+];
+var caFbIdx = 0;
+var CA_FB = [
+  "Could you say more about what you're trying to do? I can help with implementation, edge cases, or understanding how the solution works.",
+  "What have you tried so far? If you share your code, I can give more targeted feedback.",
+  "Take another look at the examples in the task spec — they show the exact input and output shapes. Which part is tripping you up?"
+];
+
+function getReply(bank, fb, fbArr, text) {
+  var t = text.toLowerCase();
+  for (var i = 0; i < bank.length; i++) {
+    for (var j = 0; j < bank[i].k.length; j++) {
+      if (t.indexOf(bank[i].k[j]) !== -1) return bank[i].r;
+    }
+  }
+  var r = fbArr[fb.idx % fbArr.length];
+  fb.idx++;
+  return r;
+}
+
+var ivFb = {idx:0}, caFb = {idx:0};
+
+/* ══════════════════════════════════════════════════════
+   SCREEN NAVIGATION
+══════════════════════════════════════════════════════ */
+var screens = ['setup','workspace','fu','review'];
+function show(id) {
+  ['scr-setup','scr-workspace','scr-fu','scr-review'].forEach(function(s){
+    document.getElementById(s).hidden = (s !== 'scr-'+id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ══════════════════════════════════════════════════════
+   START
+══════════════════════════════════════════════════════ */
+function startInterview() {
+  S.startMs = Date.now();
+  S.secs = 1200;
+  show('workspace');
+  startTimer();
+  setTimeout(function(){
+    addMsg('iv','ai',"Welcome. Take a moment to read through the task description — no rush. Feel free to ask clarifying questions about anything in the spec before you start coding. When you're ready, start writing in the editor.");
+  }, 500);
+}
+
+/* ══════════════════════════════════════════════════════
+   TIMER
+══════════════════════════════════════════════════════ */
+function startTimer() {
+  S.interval = setInterval(function(){
+    S.secs--;
+    renderTimer();
+    if (S.secs <= 0) {
+      clearInterval(S.interval);
+      addMsg('iv','ai',"Time's up. Use the \"Finish Coding\" button to move on. We'll review whatever you have now.");
+    }
+  }, 1000);
+}
+function renderTimer() {
+  var m = Math.floor(S.secs/60), s = S.secs%60;
+  var el = document.getElementById('ws-timer');
+  if (!el) return;
+  el.textContent = pad(m)+':'+pad(s);
+  el.className = 'ws-timer' + (S.secs<=60?' urgent':(S.secs<=300?' warn':''));
+}
+function pad(n){ return n<10?'0'+n:n; }
+
+/* ══════════════════════════════════════════════════════
+   TASK TOGGLE
+══════════════════════════════════════════════════════ */
+function toggleTask() {
+  S.taskOpen = !S.taskOpen;
+  document.getElementById('task-pane').classList.toggle('closed', !S.taskOpen);
+  document.getElementById('task-toggle').textContent = S.taskOpen ? '▾ hide' : '▸ show';
+}
+
+/* ══════════════════════════════════════════════════════
+   TESTS
+══════════════════════════════════════════════════════ */
+function toggleTests() {
+  S.testsOpen = !S.testsOpen;
+  document.getElementById('test-results').classList.toggle('closed', !S.testsOpen);
+}
+function runTests() {
+  S.testRuns++;
+  S.testsOpen = true;
+  document.getElementById('test-results').classList.remove('closed');
+
+  var code = document.getElementById('code-editor').value;
+  var res = evalCode(code);
+  S.lastResult = res;
+  renderTests(res);
+
+  var p = res.filter(function(r){return r.p;}).length;
+  var tally = document.getElementById('test-tally');
+  tally.textContent = p+'/4 passing';
+  tally.style.color = p===4?'var(--acc)':p===0?'var(--err)':'var(--warn)';
+}
+function evalCode(code) {
+  var hasRet   = code.indexOf('return') !== -1;
+  var hasLoop  = code.indexOf('for ') !== -1 || code.indexOf('while ') !== -1;
+  var hasStat  = code.indexOf("'completed'") !== -1 || code.indexOf('"completed"') !== -1;
+  var hasCust  = code.indexOf('customer') !== -1;
+  var hasAmt   = code.indexOf('amount') !== -1;
+  var hasTodo  = code.indexOf('TODO') !== -1 || (code.trim().slice(-4) === 'pass' && !hasLoop);
+  var full = hasRet && hasLoop && hasStat && hasCust && hasAmt && !hasTodo;
+  var part = !hasTodo && hasRet && hasLoop;
+  return [
+    { n:'Empty input returns {}',
+      exp:'{}',
+      got: full||part?'{}':'None',
+      p: full||part },
+    { n:'Cancelled orders are ignored',
+      exp:'{}',
+      got: full?'{}': hasTodo?'None': hasStat?'{}':'{"Alice": 500}',
+      p: full||(part&&hasStat) },
+    { n:'Multiple orders for same customer are summed',
+      exp:'{"Alice": 500}',
+      got: full?'{"Alice": 500}': part&&hasAmt?'{"Alice": 500}': part?'{"Alice": 300}':'None',
+      p: full },
+    { n:'Multiple customers returned correctly',
+      exp:'{"Alice": 1000, "Bob": 750}',
+      got: full?'{"Alice": 1000, "Bob": 750}': part?'{"Alice": 1200, "Bob": 750}':'None',
+      p: full }
+  ];
+}
+function renderTests(res) {
+  document.getElementById('test-results').innerHTML = res.map(function(r){
+    return '<div class="tc '+(r.p?'pass':'fail')+'">'
+      +'<div class="tc-icon">'+(r.p?'✓':'✗')+'</div>'
+      +'<div><div class="tc-name">'+r.n+'</div>'
+      +'<div class="tc-row">Expected: '+r.exp+'</div>'
+      +'<div class="tc-row">Got: '+r.got+'</div></div>'
+      +'</div>';
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   AI MESSAGING
+══════════════════════════════════════════════════════ */
+function switchTab(t) {
+  S.activeTab = t;
+  document.getElementById('tab-iv').className = 'ai-tab'+(t==='iv'?' on':'');
+  document.getElementById('tab-ca').className = 'ai-tab'+(t==='ca'?' on':'');
+  document.getElementById('panel-iv').hidden = t!=='iv';
+  document.getElementById('panel-ca').hidden = t!=='ca';
+}
+function onKey(e, role) {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(role); }
+}
+function send(role) {
+  var inp = document.getElementById('inp-'+role);
+  var text = inp.value.trim();
+  if (!text) return;
+  addMsg(role,'user',text);
+  inp.value = '';
+  inp.style.height = 'auto';
+  if (role==='ca') S.aiMsgs++;
+  var tid = showDots(role);
+  setTimeout(function(){
+    removeDots(role,tid);
+    var rep = role==='iv'
+      ? getReply(IV_BANK, ivFb, IV_FB, text)
+      : getReply(CA_BANK, caFb, CA_FB, text);
+    addMsg(role,'ai',rep);
+  }, 500+Math.random()*700);
+}
+var dotC=0;
+function showDots(role) {
+  var id='dots-'+(++dotC);
+  var c=document.getElementById('msgs-'+role);
+  var d=document.createElement('div');
+  d.className='msg ai'; d.id=id;
+  d.innerHTML='<div class="msg-who">'+(role==='iv'?'AI Interviewer':'AI Coding Assistant')+'</div>'
+    +'<div class="dots"><span></span><span></span><span></span></div>';
+  c.appendChild(d); c.scrollTop=c.scrollHeight; return id;
+}
+function removeDots(role,id){ var e=document.getElementById(id); if(e)e.remove(); }
+
+function addMsg(role,sender,text) {
+  var c=document.getElementById('msgs-'+role);
+  var d=document.createElement('div');
+  d.className='msg '+(sender==='user'?'user':'ai');
+  var who = sender==='user'?'You':(role==='iv'?'AI Interviewer':'AI Coding Assistant');
+  d.innerHTML='<div class="msg-who">'+who+'</div>'
+    +'<div class="msg-bub">'+fmtMsg(text)+'</div>';
+  c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+function fmtMsg(text) {
+  var e=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  e=e.replace(/```[\w]*\n?([\s\S]*?)```/g,function(_,c){
+    return '<div class="msg-codeblock">'+c.trim()+'</div>';
+  });
+  e=e.replace(/`([^`]+)`/g,'<code style="font-family:var(--mono);font-size:12px;background:var(--surf3);padding:1px 4px;border-radius:3px;">$1</code>');
+  e=e.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  return e;
+}
+
+/* ══════════════════════════════════════════════════════
+   FINISH CODING → FOLLOW-UP
+══════════════════════════════════════════════════════ */
+function finishCoding() {
+  clearInterval(S.interval);
+  S.endMs = Date.now();
+  document.getElementById('fu-code').textContent = document.getElementById('code-editor').value;
+  var m=Math.floor(S.secs/60), s=S.secs%60;
+  document.getElementById('fu-time').textContent = pad(m)+':'+pad(s)+' remaining';
+  S.fuStep=0; renderFu(); show('fu');
+}
+
+/* ══════════════════════════════════════════════════════
+   FOLLOW-UP
+══════════════════════════════════════════════════════ */
+function renderFu() {
+  var i=S.fuStep;
+  document.getElementById('fu-label').textContent='Question '+(i+1)+' of 3';
+  document.getElementById('fu-q').textContent=FU_QS[i];
+  document.getElementById('fu-ans').value=S.fuAns[i];
+  for(var j=0;j<3;j++){
+    var el=document.getElementById('fd'+j);
+    el.className='fu-dot'+(j<i?' done':j===i?' cur':'');
+  }
+  document.getElementById('fu-back').style.visibility=i===0?'hidden':'visible';
+  document.getElementById('fu-next').textContent=i===2?'Finish & Review →':'Next Question →';
+}
+function saveAns(){ S.fuAns[S.fuStep]=document.getElementById('fu-ans').value; }
+function fuNext(){ saveAns(); if(S.fuStep<2){S.fuStep++;renderFu();}else{buildReview();show('review');} }
+function fuBack(){ saveAns(); if(S.fuStep>0){S.fuStep--;renderFu();} }
+
+/* ══════════════════════════════════════════════════════
+   REVIEW
+══════════════════════════════════════════════════════ */
+function buildReview() {
+  var el = Math.round(((S.endMs||Date.now())-S.startMs)/1000);
+  document.getElementById('rv-t').textContent = Math.floor(el/60)+'m '+el%60+'s';
+  document.getElementById('rv-a').textContent = S.aiMsgs;
+  document.getElementById('rv-r').textContent = S.testRuns;
+  var p = S.lastResult ? S.lastResult.filter(function(r){return r.p;}).length : null;
+  document.getElementById('rv-s').textContent = p!==null ? p+'/4' : 'Not run';
+
+  var code = document.getElementById('code-editor').value;
+  document.getElementById('rv-code').textContent = code;
+
+  document.getElementById('rv-answers').innerHTML = FU_QS.map(function(q,i){
+    return '<div class="rv-answer">'
+      +'<div class="rv-answer-q">'+q+'</div>'
+      +'<div class="rv-answer-a">'+(S.fuAns[i]||'<em style="color:var(--fg3)">No answer provided.</em>')+'</div>'
+      +'</div>';
+  }).join('');
+
+  var hasLoop  = code.indexOf('for ')!==-1||code.indexOf('while ')!==-1;
+  var hasStat  = code.indexOf("'completed'")!==-1||code.indexOf('"completed"')!==-1;
+  var hasRet   = code.indexOf('return')!==-1;
+  var hasTodo  = code.indexOf('TODO')!==-1||(!hasRet);
+  var usedAI   = S.aiMsgs>0;
+  var ranTests = S.testRuns>0;
+  var passing  = p||0;
+
+  var fb = [
+    { icon:'⬡', title:'Implementation',
+      body: hasTodo
+        ? "The submitted code still contains a TODO or returns nothing. Next time focus on completing the core loop — even a minimal working solution reveals more than a stub."
+        : hasStat&&hasLoop&&hasRet
+          ? "The core logic is in place: filtering by status and accumulating per-customer totals. Verify that your accumulation handles the first occurrence of a customer (when they aren't yet in the dict)."
+          : "Some logic is present but the implementation may be incomplete. Review whether cancelled orders are excluded and whether customer totals accumulate correctly across multiple orders."
+    },
+    { icon:'◎', title:'Explanation',
+      body: S.fuAns[0]&&S.fuAns[0].length>20
+        ? "You provided an explanation of how repeated customers are handled. In an actual interview, tie your answer directly to the data structure — name the specific step where accumulation happens."
+        : "No explanation was provided for handling repeated customers. Tracing through your code on a concrete example is a core interview skill. Practice this out loud or in writing."
+    },
+    { icon:'◈', title:'Verification',
+      body: ranTests
+        ? (S.fuAns[1]&&S.fuAns[1].length>15
+            ? (passing<4?"You ran tests and described an edge case. "+passing+" of 4 demo tests passed — trace through the failing cases to see what your code actually returns versus what's expected."
+                       :"All demo tests passed and you described an edge case. Consider whether there are inputs beyond the demo cases worth checking.")
+            : ("You ran "+S.testRuns+" test run"+(S.testRuns>1?"s":"")+" but didn't describe an edge case in the follow-up. Demonstrating that you thought about boundaries matters as much as the tests passing."))
+        : "No demo tests were run. Running tests early — even on an incomplete implementation — helps you spot structural issues before they compound."
+    },
+    { icon:'⟡', title:'Use of AI',
+      body: !usedAI
+        ? "You didn't use the AI Coding Assistant. That's fine, but the assistant is available for a reason — using it to check edge cases or get a second read on your approach is part of the intended workflow."
+        : (S.fuAns[2]&&S.fuAns[2].length>15
+            ? "You described your use of the assistant. The key skill is evaluating suggestions rather than accepting them wholesale — make sure you can explain any line the assistant generated."
+            : "You sent "+S.aiMsgs+" message"+(S.aiMsgs>1?"s":"")+" to the assistant but didn't reflect on it in the follow-up. Practice articulating which suggestions you used and why.")
+    }
+  ];
+  document.getElementById('rv-fb').innerHTML = fb.map(function(f){
+    return '<div class="rv-fb"><div class="rv-fb-title"><span>'+f.icon+'</span>'+f.title+'</div>'
+      +'<div class="rv-fb-body">'+f.body+'</div></div>';
+  }).join('');
+
+  var sugg = makeSuggestions(code, S.fuAns, ranTests, usedAI, passing);
+  document.getElementById('rv-next').innerHTML = sugg.map(function(s,i){
+    return '<li><span class="rv-next-n">0'+(i+1)+'</span><span>'+s+'</span></li>';
+  }).join('');
+}
+
+function makeSuggestions(code, ans, ranTests, usedAI, passing) {
+  var out=[];
+  var hasTodo=code.indexOf('TODO')!==-1||code.indexOf('return')===-1;
+  var hasStat=code.indexOf("'completed'")!==-1||code.indexOf('"completed"')!==-1;
+  if(hasTodo||!hasStat)
+    out.push("Practice accumulator patterns from scratch: iterate over a list, filter by a field, and build a dict of totals. This pattern appears in many interview problems under different guises.");
+  if(!ranTests||passing<4)
+    out.push("Before submitting, trace each test case manually. If your mental model and your code disagree, that's the most useful thing to debug — more than trying a random fix.");
+  if(!ans[0]||ans[0].length<30)
+    out.push("After solving any problem, practice a one-minute verbal walkthrough: your data structure, what you iterate over, what you check, and what you accumulate. Clear explanation is as important as correct code.");
+  if(!ans[1]||ans[1].length<20)
+    out.push("Before coding, name the edge cases out loud: empty input, all-cancelled, duplicate keys. Interviewers expect you to have thought about these before you type the first line.");
+  if(!usedAI)
+    out.push("Try using the AI assistant to review a completed solution — ask specifically about edge cases or whether the approach could be simplified. Then verify every suggestion yourself before accepting it.");
+  else
+    out.push("When the assistant suggests code, resist copying it immediately. Read it, explain it back in your own words, then decide whether to use it and why. That reasoning is what the interviewer is listening for.");
+  out.push("Try a variation: return a dict of *lists* (grouping orders by customer) rather than summing. Same pattern, different accumulation logic — a good way to test whether you understand the shape of the problem.");
+  return out.slice(0,4);
+}
+
+/* ══════════════════════════════════════════════════════
+   RESTART
+══════════════════════════════════════════════════════ */
+function confirmRestart() {
+  var btn=document.getElementById('restart-btn');
+  if(btn.dataset.c){
+    doRestart();
+  } else {
+    btn.dataset.c='1';
+    btn.textContent='Confirm — lose session?';
+    setTimeout(function(){
+      if(btn.dataset.c){delete btn.dataset.c;btn.textContent='Start New Session';}
+    },3000);
+  }
+}
+function doRestart() {
+  clearInterval(S.interval);
+  S={startMs:0,endMs:0,interval:null,secs:1200,aiMsgs:0,testRuns:0,lastResult:null,
+     taskOpen:true,testsOpen:false,activeTab:'iv',fuStep:0,fuAns:['','','']};
+  document.getElementById('code-editor').value=
+    "def summarize_orders(orders):\n    \"\"\"\n    Return a dict mapping each customer to their total\n    completed-order amount in cents. Ignore cancelled orders.\n    \"\"\"\n    # TODO: implement this function\n    pass";
+  document.getElementById('msgs-iv').innerHTML='';
+  document.getElementById('msgs-ca').innerHTML='';
+  document.getElementById('test-results').innerHTML='';
+  document.getElementById('test-results').classList.add('closed');
+  document.getElementById('test-tally').textContent='— not run yet';
+  document.getElementById('test-tally').style.color='';
+  document.getElementById('ws-timer').textContent='20:00';
+  document.getElementById('ws-timer').className='ws-timer';
+  document.getElementById('task-pane').classList.remove('closed');
+  document.getElementById('task-toggle').textContent='▾ hide';
+  switchTab('iv');
+  ivFb={idx:0}; caFb={idx:0};
+  show('setup');
+}
+
+/* ══════════════════════════════════════════════════════
+   CODE EDITOR — tab key
+══════════════════════════════════════════════════════ */
+document.getElementById('code-editor').addEventListener('keydown',function(e){
+  if(e.key==='Tab'){
+    e.preventDefault();
+    var s=this.selectionStart, en=this.selectionEnd;
+    this.value=this.value.substring(0,s)+'    '+this.value.substring(en);
+    this.selectionStart=this.selectionEnd=s+4;
+  }
+});
+
+/* ═══ THEME TOGGLE ═══ */
+(function(){
+  try {
+    var saved = localStorage.getItem('smith-theme');
+    if (saved) applyTheme(saved, false);
+  } catch(e){}
+})();
+function applyTheme(t, save) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-toggle').textContent = t==='dark' ? '☀ Light' : '🌙 Dark';
+  try { if(save) localStorage.setItem('smith-theme', t); } catch(e){}
+}
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  var next = (!cur || cur==='dark') ? 'light' : 'dark';
+  applyTheme(next, true);
+}
+
+/* Auto-resize chat inputs */
+['inp-iv','inp-ca'].forEach(function(id){
+  document.getElementById(id).addEventListener('input',function(){
+    this.style.height='auto';
+    this.style.height=Math.min(this.scrollHeight,100)+'px';
+  });
+});
+</script>
